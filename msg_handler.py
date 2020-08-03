@@ -71,11 +71,11 @@ class msg_handler(Dispatcher):
         return False
 
     def is_admin(self, context):
-        admin = common.admin_userid
-        if str(context['from']['id']) != str(admin):
-            self.logger.debug("user: %s not admin(%s)" % (context['from']['id'], admin))
+        admin = common.admin_user
+        if str(context['from']['username']) != str(admin):
+            self.logger.debug("user: %s not admin(%s)" % (context['from']['username'], admin))
             return False
-        self.logger.debug("user: %s is admin(%s) √" % (context['from']['id'], admin))
+        self.logger.debug("user: %s is admin(%s) √" % (context['from']['username'], admin))
         return True
 
     def get_command_method(self, item, is_admin=False):

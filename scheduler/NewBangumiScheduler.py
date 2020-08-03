@@ -1,29 +1,29 @@
 #!/usr/bin/python
 # coding=utf-8
 
-import os, json, asyncio, aiohttp
+import os, json, asyncio, aiohttp, common, logging
 from aiohttp import ClientSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from utils import channel_set, group_set
-from tgbot import bot
+from tgbot import seng_message_to_err_channel, bot
 
 prev_bangumi_key_list = []
 
 
 async def check_update():
-
+    logger = logging.getLogger(__name__)
     is_first = (len(prev_bangumi_key_list) == 0)
     # is_first = False    # For debug
-    api_url = os.environ.get('bgmi_api', 'http://127.0.0.1/api/index')
+    api_url = common.bgmi_api
 
-    bot.logger.info('checking update...')
+    logger.info('checking update...')
 
     try:
         async with ClientSession() as client:
             content = await fetch(client, api_url)
     except asyncio.TimeoutError as _:
-        bot.logger.warn('fetch timeout!')
-        await bot.send_private_msg(user_id=os.environ.get('admin_qq', '10000'), message='bgmi api fetch timeout!')
+        logger.warning('fetch timeout!')
+        await seng_message_to_err_channel(text='bgmi api fetch timeout!')
         return
     except (
         aiohttp.client_exceptions.ClientConnectionError,
@@ -32,17 +32,17 @@ async def check_update():
         ConnectionRefusedError,
         ConnectionResetError
     ) as _:
-        bot.logger.warn('connect failed!')
-        await bot.send_private_msg(user_id=os.environ.get('admin_qq', '10000'), message='bgmi api connect failed!')
+        logger.warning('connect failed!')
+        await seng_message_to_err_channel(text='bgmi api connect failed!')
         return
 
     updated_list = []
     new_bangumi_key_list = []
     api_data = json.loads(content)
-    bot.logger.debug(api_data)
+    logger.debug(api_data)
     bangumi_list = api_data['data']
     for bangumi in bangumi_list:
-        bot.logger.debug(bangumi)
+        logger.debug(bangumi)
         bangumi_name = bangumi['bangumi_name']
         for episode in bangumi['player'].keys():
             bangumi_episode_key = '%s_episode_%s' % (bangumi_name, episode)
@@ -56,7 +56,7 @@ async def check_update():
 
         pass
 
-    bot.logger.info(updated_list)
+    logger.info(updated_list)
     # update prev list
     prev_bangumi_key_list.clear()
     prev_bangumi_key_list.extend(new_bangumi_key_list)
@@ -67,13 +67,13 @@ async def check_update():
 
         # send to discuss
         for discuss_id in list(channel_set):
-            bot.logger.debug('send to channel: %s' %(channel_set))
-            await bot.send_discuss_msg(discuss_id=discuss_id, message=message)
+            logger.debug('send to channel: %s' %(channel_set))
+            await bot.send_message(chat_id=discuss_id, text=message)
 
         # send to group
         for group_id in list(group_set):
-            bot.logger.debug('send to group: %s' % (group_id))
-            await bot.send_group_msg(group_id=group_id, message=message)
+            logger.debug('send to group: %s' % (group_id))
+            await bot.send_message(chat_id=group_id, text=message)
         pass
 
     pass
