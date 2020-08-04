@@ -23,7 +23,8 @@ class msg_handler(Dispatcher):
         @self.message_handler()
         async def handle_msg(context):
             message = str(context['text'])
-
+            if not message.startswith('/'):
+                return
             message = message[1:]
             cmd = message.split(' ')
             method_name = cmd[0]
