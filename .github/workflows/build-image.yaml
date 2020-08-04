@@ -1,0 +1,49 @@
+name: Docker Image CI
+
+env: 
+  DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
+  DOCKERHUB_PASSWD: ${{ secrets.DOCKERHUB_PASSWD }}
+  REPOSITORY: codysk/bgmi-tgbot
+  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
+
+on: 
+ - push
+
+jobs:
+
+  build-docker-image:
+
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/') }}
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: export TAG Variable
+      run: |
+        if [[ $IS_RELEASE = 'true' ]]; then
+            TAGS=${GITHUB_REF:10},latest
+        else
+            TAGS=${GITHUB_REF:11}-branch
+        fi
+
+        NEED_PUSH='false'
+        if [[ -n $DOCKERHUB_USER ]]; then
+            NEED_PUSH='true'
+        fi
+        echo "NEED_PUSH=$NEED_PUSH"
+        echo "TAGS=$TAGS"
+        
+        echo "::set-env name=NEED_PUSH::$NEED_PUSH"
+        echo "::set-env name=TAGS::$TAGS"
+
+    - name: build & push image
+      if: ${{ env.NEED_PUSH == 'true' }}
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ env.DOCKERHUB_USER }}
+        password: ${{ env.DOCKERHUB_PASSWD }}
+        repository: ${{ env.REPOSITORY }}
+        tags: ${{ env.TAGS }}
+
