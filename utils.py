@@ -12,7 +12,6 @@ class savable_set(set):
         super(savable_set, self).__init__()
         self.load()
 
-
     def save(self):
         try:
             with open(file=self.file_path, mode='w') as fp:

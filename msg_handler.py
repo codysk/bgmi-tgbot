@@ -20,6 +20,7 @@ class msg_handler(Dispatcher):
         self.admin_command_handler = admin_command_handler(self.bot)
         self.public_command_handler = public_command_handler(self.bot)
 
+        @self.channel_post_handler()
         @self.message_handler()
         async def handle_msg(context):
             message = str(context['text'])
@@ -48,6 +49,7 @@ class msg_handler(Dispatcher):
             await method(context, params)
 
     def should_reply_command(self, is_admin, context):
+        self.logger.debug("should_reply_command: is_admin=%s" % is_admin)
         if is_admin:
             return True
 
@@ -72,6 +74,10 @@ class msg_handler(Dispatcher):
         return False
 
     def is_admin(self, context):
+        # channel dont grant admin privileges
+        if context['chat']['type'] == 'channel':
+            return False
+
         admin = common.admin_user
         if str(context['from']['username']) != str(admin):
             self.logger.debug("user: %s not admin(%s)" % (context['from']['username'], admin))
@@ -126,10 +132,18 @@ class admin_command_handler:
             reply_to_message_id=context['message_id'],
             text='channel subscript list: %s' % (','.join(channel_set))
         )
+
+        group_list_msgs = []
+        for group_id in group_set:
+            chat = await self.get_chat(chat_id=group_id)  # TODO: add cache
+            self.logger.debug(chat)
+
+            group_list_msgs.append('%s:\t%s' % (group_id, chat['title']))
+
         await self.send_message(
             chat_id=context['chat']['id'],
             reply_to_message_id=context['message_id'],
-            text='group subscript list: %s' % (','.join(group_set))
+            text='group subscript list: \n %s' % ('\n'.join(group_list_msgs))
         )
         pass
 
