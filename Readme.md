@@ -1,6 +1,9 @@
 # BGmi-tgbot
 
-基于[aiogram](https://github.com/aiogram/aiogram) 的BGmi Telegram Bot
+![Docker Image CI](https://github.com/codysk/bgmi-tgbot/workflows/Docker%20Image%20CI/badge.svg?branch=master)
+![DockerHub](https://images.microbadger.com/badges/version/codysk/bgmi-tgbot.svg)
+
+基于 [aiogram](https://github.com/aiogram/aiogram) 的BGmi Telegram Bot
 
 ## 目前实现的功能
 + BGmi 站点的番组出现更新时的QQ通知
