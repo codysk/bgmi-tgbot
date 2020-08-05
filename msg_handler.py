@@ -20,6 +20,7 @@ class msg_handler(Dispatcher):
         self.admin_command_handler = admin_command_handler(self.bot)
         self.public_command_handler = public_command_handler(self.bot)
 
+        @self.channel_post_handler()
         @self.message_handler()
         async def handle_msg(context):
             message = str(context['text'])
@@ -35,19 +36,20 @@ class msg_handler(Dispatcher):
             if not self.should_reply_command(is_admin=is_admin, context=context):
                 return
 
-            self.logger.debug("calling %s" % (method_name))
+            self.logger.debug("calling %s" % method_name)
             method = self.get_command_method(method_name, is_admin=is_admin)
             if not callable(method) or not isinstance(method, types.MethodType):
                 await self.bot.send_message(
                     chat_id=context['chat']['id'],
                     reply_to_message_id=context['message_id'],
-                    text="command %s not exist" % (method_name)
+                    text="command %s not exist" % method_name
                 )
                 return
 
             await method(context, params)
 
     def should_reply_command(self, is_admin, context):
+        self.logger.debug("should_reply_command: is_admin=%s" % is_admin)
         if is_admin:
             return True
 
@@ -72,6 +74,10 @@ class msg_handler(Dispatcher):
         return False
 
     def is_admin(self, context):
+        # channel dont grant admin privileges
+        if context['chat']['type'] == 'channel':
+            return False
+
         admin = common.admin_user
         if str(context['from']['username']) != str(admin):
             self.logger.debug("user: %s not admin(%s)" % (context['from']['username'], admin))
@@ -103,14 +109,6 @@ class admin_command_handler:
         message_type = str(context['chat']['type'])
         chat_id = str(context['chat']['id'])
 
-        if message_type == 'channel':
-            channel_set.add(chat_id)
-            await self.send_message(
-                chat_id=context['chat']['id'],
-                reply_to_message_id=context['message_id'],
-                text='channel %s add to subscript list' % chat_id
-            )
-
         if message_type == 'group':
             group_set.add(chat_id)
             await self.send_message(
@@ -120,16 +118,48 @@ class admin_command_handler:
             )
         pass
 
+    async def addchannel(self, context, params):
+        chat_id = str(context['chat']['id'])
+        if len(params) < 1:
+            await self.send_message(
+                chat_id=context['chat']['id'],
+                reply_to_message_id=context['message_id'],
+                text='Usage: /addchannel <@channelUserName> [<@channelUserName> <@channelUserName> ...]'
+            )
+            return
+        id_list = params
+        added_list = []
+        for _id in id_list:
+            if not _id.startswith('@'):
+                continue
+            channel_set.add(_id)
+            added_list.append(_id)
+            pass
+        await self.send_message(
+            chat_id=chat_id,
+            reply_to_message_id=context['message_id'],
+            text='add channel %s' % (','.join(id_list)) if len(added_list) != 0 else 'nothing to add'
+        )
+        pass
+
     async def getlist(self, context, params):
         await self.send_message(
             chat_id=context['chat']['id'],
             reply_to_message_id=context['message_id'],
-            text='channel subscript list: %s' % (','.join(channel_set))
+            text='channel subscript list:\n %s' % ('\n'.join(channel_set))
         )
+
+        group_list_msgs = []
+        for group_id in group_set:
+            chat = await self.get_chat(chat_id=group_id)  # TODO: add cache
+            self.logger.debug(chat)
+
+            group_list_msgs.append('%s:\t%s' % (group_id, chat['title']))
+
         await self.send_message(
             chat_id=context['chat']['id'],
             reply_to_message_id=context['message_id'],
-            text='group subscript list: %s' % (','.join(group_set))
+            text='group subscript list: \n %s' % ('\n'.join(group_list_msgs))
         )
         pass
 
@@ -181,7 +211,7 @@ class public_command_handler:
         )
 
     async def status(self, context, params):
-        api_url = common.bgmi_api
+        api_url = common.bgmi_base_url + '/api/index'
         self.logger.debug('checking status...')
 
         try:
