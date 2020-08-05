@@ -109,14 +109,6 @@ class admin_command_handler:
         message_type = str(context['chat']['type'])
         chat_id = str(context['chat']['id'])
 
-        if message_type == 'channel':
-            channel_set.add(chat_id)
-            await self.send_message(
-                chat_id=context['chat']['id'],
-                reply_to_message_id=context['message_id'],
-                text='channel %s add to subscript list' % chat_id
-            )
-
         if message_type == 'group':
             group_set.add(chat_id)
             await self.send_message(
