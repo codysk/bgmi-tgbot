@@ -49,7 +49,7 @@ async def check_update():
             bangumi_episode_key = '%s_episode_%s' % (bangumi_name, episode)
             new_bangumi_key_list.append(bangumi_episode_key)
             if bangumi_episode_key not in prev_bangumi_key_list:
-                if not is_first or True:
+                if not is_first:
 
                     if bangumi_name not in updated_list:
                         updated_list[bangumi_name] = {
