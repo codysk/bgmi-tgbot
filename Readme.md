@@ -29,7 +29,7 @@ services:
       - api_token=<Telegram Bot TOKEN>
       - admin_user=<Admin UserName>
       - log_level=ERROR
-      - bgmi_api=<bgmi index api address>
+      - bgmi_base_url=<bgmi index api address>
       - error_channel=<@ChannelUserName>
     volumes:
       - ./data:/data
