@@ -11,7 +11,7 @@ common.proxy_url = os.environ.get('proxy_url', '')
 common.admin_user = os.environ.get('admin_user', '')
 common.enable_public_command = os.environ.get('enable_public_command', 'Always')
 common.error_channel = os.environ.get('error_channel', None)
-common.bgmi_api = os.environ.get('bgmi_api', 'http://127.0.0.1/api/index')
+common.bgmi_base_url = os.environ.get('bgmi_base_url', 'http://127.0.0.1')
 
 loglevel = os.environ.get('log_level', 'ERROR')
 logging.basicConfig(level=getattr(logging, loglevel))

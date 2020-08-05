@@ -36,13 +36,13 @@ class msg_handler(Dispatcher):
             if not self.should_reply_command(is_admin=is_admin, context=context):
                 return
 
-            self.logger.debug("calling %s" % (method_name))
+            self.logger.debug("calling %s" % method_name)
             method = self.get_command_method(method_name, is_admin=is_admin)
             if not callable(method) or not isinstance(method, types.MethodType):
                 await self.bot.send_message(
                     chat_id=context['chat']['id'],
                     reply_to_message_id=context['message_id'],
-                    text="command %s not exist" % (method_name)
+                    text="command %s not exist" % method_name
                 )
                 return
 
@@ -211,7 +211,7 @@ class public_command_handler:
         )
 
     async def status(self, context, params):
-        api_url = common.bgmi_api
+        api_url = common.bgmi_base_url + '/api/index'
         self.logger.debug('checking status...')
 
         try:

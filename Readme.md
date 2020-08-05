@@ -42,7 +42,7 @@ services:
 | error_channel | 用于 bot 错误信息输出的 channel (@ChannelUserName) | | None |
 | enable_public_command | 公共指令的开放等级(Always总是开放/Subscriber对订阅的群与讨论组开放/Never永不) | | Always |
 | log_level | 日志等级(ERROR/WARNING/INFO/DEBUG) |  | ERROR |
-| bgmi_api | BGmi首页api的url |  | http://127.0.0.1/api/index |
+| bgmi_base_url | BGmi首页的url |  | http://127.0.0.1 |
 
 做好docker-compose.yml配置文件后
 ```
