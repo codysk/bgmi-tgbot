@@ -118,11 +118,35 @@ class admin_command_handler:
             )
         pass
 
+    async def addchannel(self, context, params):
+        chat_id = str(context['chat']['id'])
+        if len(params) < 1:
+            await self.send_message(
+                chat_id=context['chat']['id'],
+                reply_to_message_id=context['message_id'],
+                text='Usage: /addchannel <@channelUserName> [<@channelUserName> <@channelUserName> ...]'
+            )
+            return
+        id_list = params
+        added_list = []
+        for _id in id_list:
+            if not _id.startswith('@'):
+                continue
+            channel_set.add(_id)
+            added_list.append(_id)
+            pass
+        await self.send_message(
+            chat_id=chat_id,
+            reply_to_message_id=context['message_id'],
+            text='add channel %s' % (','.join(id_list)) if len(added_list) != 0 else 'nothing to add'
+        )
+        pass
+
     async def getlist(self, context, params):
         await self.send_message(
             chat_id=context['chat']['id'],
             reply_to_message_id=context['message_id'],
-            text='channel subscript list: %s' % (','.join(channel_set))
+            text='channel subscript list:\n %s' % ('\n'.join(channel_set))
         )
 
         group_list_msgs = []
