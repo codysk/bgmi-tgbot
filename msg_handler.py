@@ -7,7 +7,7 @@ import json
 import asyncio
 import aiohttp
 import common
-from aiogram import Dispatcher, Bot as TGBot
+from aiogram import Dispatcher, Bot as TGBot, types as TGTypes
 from utils import channel_set, group_set
 from aiohttp import ClientSession
 
@@ -47,6 +47,18 @@ class msg_handler(Dispatcher):
                 return
 
             await method(context, params)
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.register_command_list())
+
+    async def register_command_list(self):
+        handler = self.public_command_handler
+        command_list = [
+            TGTypes.BotCommand(command=method_name, description=getattr(handler, method_name).__doc__) for method_name in dir(handler)
+            if not method_name.startswith('_') and callable(getattr(handler, method_name))
+        ]
+        self.logger.debug(command_list)
+        await self.bot.set_my_commands(commands=command_list)
 
     def should_reply_command(self, is_admin, context):
         self.logger.debug("should_reply_command: is_admin=%s" % is_admin)
@@ -204,6 +216,7 @@ class public_command_handler:
         self.logger = logging.getLogger(__class__.__name__)
 
     async def ping(self, context, params):
+        """ping"""
         await self.send_message(
             chat_id=context['chat']['id'],
             reply_to_message_id=context['message_id'],
@@ -211,6 +224,7 @@ class public_command_handler:
         )
 
     async def status(self, context, params):
+        """获取番剧订阅状态"""
         api_url = common.bgmi_base_url + '/api/index'
         self.logger.debug('checking status...')
 
