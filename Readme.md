@@ -6,8 +6,8 @@
 基于 [aiogram](https://github.com/aiogram/aiogram) 的BGmi Telegram Bot
 
 ## 目前实现的功能
-+ BGmi 站点的番组出现更新时的QQ通知
-+ 管理(增/删)通知发往讨论组/群
++ BGmi 站点的番组出现更新时的通知
++ 管理(增/删)通知发往讨论Channel/Group
 + 其他的还没想好做啥。。(
 
 ## 环境要求
@@ -55,9 +55,10 @@ docker-compose up -d
 
 ## 使用方式
 
-用管理员账号私聊机器人 或在将机器人加入 Channel/Group 均可使用管理指令
+用管理员账号私聊机器人 或在将机器人加入 Group 均可使用管理指令
 ### 管理员指令
-+ `/set` 将当前 Channel/Group 加入到番组更新的通知列表中
++ `/set` 将当前 Group 加入到番组更新的通知列表中
++ `/addchannel` <@channelUserName> [<@channelUserName>...]
 + `/getlist` 获取当前所有接受通知的 Channel/Group
 + `/remove <channel/group> <id> [<id>...]` 从通知列表中删除 Channel/Group
 + 待更新
