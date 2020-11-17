@@ -35,8 +35,8 @@ jobs:
         echo "NEED_PUSH=$NEED_PUSH"
         echo "TAGS=$TAGS"
         
-        echo "::set-env name=NEED_PUSH::$NEED_PUSH"
-        echo "::set-env name=TAGS::$TAGS"
+        echo "NEED_PUSH=$NEED_PUSH" >> $GITHUB_ENV
+        echo "TAGS=$TAGS" >> $GITHUB_ENV
 
     - name: build & push image
       if: ${{ env.NEED_PUSH == 'true' }}
