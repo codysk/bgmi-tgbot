@@ -19,6 +19,10 @@ class msg_handler(Dispatcher):
         self.logger = logging.getLogger(__class__.__name__)
         self.admin_command_handler = admin_command_handler(self.bot)
         self.public_command_handler = public_command_handler(self.bot)
+        self.user = None
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.register_command_list())
 
         @self.channel_post_handler()
         @self.message_handler()
@@ -26,6 +30,8 @@ class msg_handler(Dispatcher):
             message = str(context['text'])
             if not message.startswith('/'):
                 return
+            if message.endswith('@' + (await self.bot.me).username):
+                message = message[:-len('@'+(await self.bot.me).username)]
             message = message[1:]
             cmd = message.split(' ')
             method_name = cmd[0]
@@ -48,9 +54,6 @@ class msg_handler(Dispatcher):
 
             await method(context, params)
 
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.register_command_list())
-
     async def register_command_list(self):
         handler = self.public_command_handler
         command_list = [
@@ -59,6 +62,7 @@ class msg_handler(Dispatcher):
         ]
         self.logger.debug(command_list)
         await self.bot.set_my_commands(commands=command_list)
+
 
     def should_reply_command(self, is_admin, context):
         self.logger.debug("should_reply_command: is_admin=%s" % is_admin)
@@ -187,7 +191,8 @@ class admin_command_handler:
         id_list = params[1:]
         if list_name == 'channel':
             for _id in id_list:
-                channel_set.remove(_id)
+                if _id in channel_set:
+                    channel_set.remove(_id)
                 pass
             await self.send_message(
                 chat_id=context['chat']['id'],
@@ -197,7 +202,8 @@ class admin_command_handler:
             pass
         if list_name == 'group':
             for _id in id_list:
-                group_set.remove(_id)
+                if _id in group_set:
+                    group_set.remove(_id)
                 pass
             await self.send_message(
                 chat_id=context['chat']['id'],
